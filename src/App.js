@@ -290,7 +290,6 @@ function App() {
 
   return (
     <div className="App">
-      {console.log('disableSubmit > ', state.disableSubmit)}
       <Toast isShow={state.displayToast} title={state.titleToast} />
       <Spinner displaySpinner={state.displaySpinner} />
       <DropdownForm 

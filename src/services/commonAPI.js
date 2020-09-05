@@ -14,6 +14,6 @@ function apiCall(url, callback, errCallback, type) {
   }
   
 export const makeAPIRequest = async (url, callback, errCallback, type) => {
-  console.log('calling');
+  console.info('calling api request');
   await apiCall(url, callback, errCallback, type);
 }
