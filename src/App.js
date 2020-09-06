@@ -8,12 +8,14 @@ import Title from './components/Title';
 import Toast from './components/Toast';
 import Button from './components/Button';
 import Spinner from './components/Spinner';
+import PostalCode from './components/PostalCode';
 
 function App() {
   /**
    * define state
    */
   const [state, setState] = useState({
+    kodePos: '',
     listProv: [],
     listKota: [],
     listKec: [],
@@ -75,7 +77,7 @@ function App() {
       default:
         break;
     }
-    nextState.displaySpinner = false;
+    // nextState.displaySpinner = false;
     setState(prevState => ({
       ...prevState,
       ...nextState,
@@ -85,8 +87,10 @@ function App() {
   const handleSelectProvinsi = data => {
     const idProv = data.target.value;
     const getProvData = state.listProv.find(i => i.id === Number(idProv));
+    console.log('nama prov > ', getProvData && getProvData.nama);
     const nextState = { ...state };
     if (!getProvData) {
+      nextState.kodePos = '';
       nextState.selectedProv = '';
       nextState.selectedKota = '';
       nextState.selectedKec = '';
@@ -103,6 +107,7 @@ function App() {
       if (state.selectedProv === '') {
         /** first select */
         nextState.selectedProv = getProvData.nama;
+        nextState.kodePos = '';
         nextState.selectedKota = '';
         nextState.selectedKec = '';
         nextState.selectedDesa = '';
@@ -116,6 +121,7 @@ function App() {
         makeAPIRequest(url, callbackAPIRequest, handleErrorRequest, Constants.KOTA_TYPE);
       } else if (getProvData.nama !== state.selectedProv) {
         nextState.selectedProv = getProvData.nama;
+        nextState.kodePos = '';
         nextState.selectedKota = '';
         nextState.selectedKec = '';
         nextState.selectedDesa = '';
@@ -141,8 +147,10 @@ function App() {
   const handleSelectKota = data => {
     const idKota = data.target.value;
     const getKotaData = state.listKota.find(i => i.id === Number(idKota));
+    console.log('nama prov > ', getKotaData && getKotaData.nama);
     const nextState = { ...state };
     if (!getKotaData) {
+      nextState.kodePos = '';
       nextState.selectedKota = '';
       nextState.selectedKec = '';
       nextState.listKec = [];
@@ -153,6 +161,7 @@ function App() {
       if (state.selectedKota === '') {
         /** first select */
         nextState.selectedKota = getKotaData.nama;
+        nextState.kodePos = '';
         nextState.selectedKec = '';
         nextState.disableListKec = false;
         nextState.alamat = '';
@@ -162,6 +171,7 @@ function App() {
         makeAPIRequest(url, callbackAPIRequest, handleErrorRequest, Constants.KEC_TYPE);
       } else if (getKotaData.nama !== state.selectedKota) {
         nextState.selectedKota = getKotaData.nama;
+        nextState.kodePos = '';
         nextState.selectedKec = '';
         nextState.disableListKec = false;
         nextState.listKec = [];
@@ -181,8 +191,10 @@ function App() {
   const handleSelectKec = data => {
     const idKec = data.target.value;
     const getKecData = state.listKec.find(i => i.id === Number(idKec));
+    console.log('nama prov > ', getKecData && getKecData.nama);
     const nextState = { ...state };
     if (!getKecData) {
+      nextState.kodePos = '';
       nextState.selectedKec = '';
       nextState.selectedDesa = '';
       nextState.listDesa = [];
@@ -193,6 +205,7 @@ function App() {
       if (state.selectedKec === '') {
         /** first select */
         nextState.selectedKec = getKecData.nama;
+        nextState.kodePos = '';
         nextState.selectedDesa = '';
         nextState.disableListDesa = false;
         nextState.alamat = '';
@@ -202,6 +215,7 @@ function App() {
         makeAPIRequest(url, callbackAPIRequest, handleErrorRequest, Constants.DESA_TYPE);
       } else if (getKecData.nama !== state.selectedKec) {
         nextState.selectedKec = getKecData.nama;
+        nextState.kodePos = '';
         nextState.selectedDesa = '';
         nextState.disableListDesa = false;
         nextState.listDesa = [];
@@ -221,6 +235,7 @@ function App() {
   const handleSelectDesa = data => {
     const idDesa = data.target.value;
     const getDesaData = state.listDesa.find(i => i.id === Number(idDesa));
+    console.log('nama prov > ', getDesaData && getDesaData.nama);
     const nextState = { ...state };
     if (!getDesaData) {
       nextState.selectedDesa = '';
@@ -251,8 +266,8 @@ function App() {
   }
 
   const handleClickSubmit = () => {
-    let { selectedProv, selectedKota, selectedKec, selectedDesa } = state;
-    const alamat = `${selectedDesa}, Kecamatan ${selectedKec}, ${selectedKota}, ${selectedProv}`;
+    let { kodePos, selectedProv, selectedKota, selectedKec, selectedDesa } = state;
+    const alamat = `${selectedDesa}, Kecamatan ${selectedKec}, ${selectedKota}, ${selectedProv}, ${kodePos}`;
     setState(prevState => ({
       ...prevState,
       disableSubmit: false,
@@ -268,6 +283,25 @@ function App() {
     }));
   };
 
+  const handleGetPostalCode = val => {
+    console.log('handleGetPostalCode > ', val);
+    setState(prevState => ({
+      ...prevState,
+      kodePos: val,
+    }))
+  };
+
+  const handleRequestDone = val => {
+    console.log('handleRequestDone > ', val);
+    setState(prevState => ({
+      ...prevState,
+      displaySpinner: false,
+    }))
+  };
+
+  /**
+   * trigger hide toast message
+   */
   useEffect(() => {
     if (state.displayToast) {
         const timerToast = setTimeout(() => {
@@ -281,6 +315,21 @@ function App() {
   }, [state.displayToast])
 
   /**
+   * overide hide spinner
+   */
+  useEffect(() => {
+    if (state.displaySpinner) {
+        const timerToast = setTimeout(() => {
+            setState(prevState => ({
+                ...prevState,
+                displaySpinner: false,
+                }));
+        }, 5000);
+        return () => clearTimeout(timerToast);
+    }
+  }, [state.displaySpinner])
+
+  /**
    * API Call Provinsi Data
    */
   useEffect(() => {
@@ -290,6 +339,13 @@ function App() {
 
   return (
     <div className="App">
+      <PostalCode
+        selectedProv={state.selectedProv}
+        selectedKota={state.selectedKota}
+        selectedKec={state.selectedKec}
+        getPostalCode={handleGetPostalCode}
+        onRequestDone={handleRequestDone}
+      />
       <Toast isShow={state.displayToast} title={state.titleToast} />
       <Spinner displaySpinner={state.displaySpinner} />
       <DropdownForm 
